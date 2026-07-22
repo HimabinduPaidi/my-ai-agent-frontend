@@ -38,7 +38,7 @@ function Home() {
 
   const login = async (token) => {
     try {
-      const { data } = await api.post("/login", { token });
+      const { data } = await api.post("/api/auth/login", { token });
       setUserData(data.user);
     } catch (error) {
       console.log(error);
