@@ -10,13 +10,10 @@ import {
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import { useUserStore, useConversationStore, useMessageStore } from "../store";
 import api from "../utils/axios";
-import { setUserData } from "../redux/user.slice";
 import { getConversations } from "../features/conversation.api";
-import { setConversations, setSelectedConversation } from "../redux/conversation.slice";
 import { getMessages } from "../features/message.api";
-import { setArtifacts, setMessages } from "../redux/message.slice";
 import BillingDrawer from "./BillingDrawer";
 import Button from "./ui/Button";
 import Avatar from "./ui/Avatar";
@@ -29,17 +26,24 @@ export default function Sidebar() {
   const [hovered, setHovered] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { userData } = useSelector((state) => state.user);
-  const { conversations, selectedConversation } = useSelector(
-    (state) => state.conversation
-  );
-  const dispatch = useDispatch();
+
+  const userData = useUserStore((state) => state.userData);
+  const setUserData = useUserStore((state) => state.setUserData);
+
+  const conversations = useConversationStore((state) => state.conversations);
+  const selectedConversation = useConversationStore((state) => state.selectedConversation);
+  const setConversations = useConversationStore((state) => state.setConversations);
+  const setSelectedConversation = useConversationStore((state) => state.setSelectedConversation);
+
+  const setMessages = useMessageStore((state) => state.setMessages);
+  const setArtifacts = useMessageStore((state) => state.setArtifacts);
+
   const [showBilling, setShowBilling] = useState(false);
 
   const logout = async () => {
     try {
       await api.get("/api/auth/logout");
-      dispatch(setUserData(null));
+      setUserData(null);
     } catch (error) {
       console.log(error);
     }
@@ -49,27 +53,27 @@ export default function Sidebar() {
     const fetchConversations = async () => {
       try {
         const data = await getConversations();
-        dispatch(setConversations(data));
+        setConversations(data);
       } catch (error) {
         console.log(error);
       }
     };
     fetchConversations();
-  }, [userData?._id]);
+  }, [userData?._id, setConversations]);
 
   const handleCreateConversation = () => {
-    dispatch(setSelectedConversation(null));
-    dispatch(setMessages([]));
-    dispatch(setArtifacts([]));
+    setSelectedConversation(null);
+    setMessages([]);
+    setArtifacts([]);
     setMobileOpen(false);
   };
 
   const handleSelectConversation = async (conversation) => {
     setMobileOpen(false);
-    dispatch(setSelectedConversation(conversation));
+    setSelectedConversation(conversation);
     const messages = await getMessages(conversation._id);
-    dispatch(setMessages(messages));
-    dispatch(setArtifacts(messages.artifacts));
+    setMessages(messages);
+    setArtifacts(messages.artifacts);
   };
 
   const CollapsedRail = () => (

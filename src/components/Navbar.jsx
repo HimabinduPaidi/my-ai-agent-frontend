@@ -1,10 +1,10 @@
 import { MessageSquare } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useConversationStore, useMessageStore } from "../store";
 import Badge from "./ui/Badge";
 
 export default function Navbar() {
-  const { selectedConversation } = useSelector((state) => state.conversation);
-  const { messages } = useSelector((state) => state.message);
+  const selectedConversation = useConversationStore((state) => state.selectedConversation);
+  const messages = useMessageStore((state) => state.messages);
 
   return (
     <header className="sticky top-0 z-10 h-14 flex items-center justify-between px-4 md:px-6 border-b border-border bg-surface/80 backdrop-blur-md shrink-0">

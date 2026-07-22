@@ -14,15 +14,9 @@ import {
   Mic,
   MicOff,
 } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import { addMessage, setArtifacts, setIsLoading } from "../redux/message.slice";
+import { useConversationStore, useMessageStore } from "../store";
 import { sendPrompt } from "../features/agent.api";
 import { createConversation, updateConversations } from "../features/conversation.api";
-import {
-  addConversation,
-  setConvTitle,
-  setSelectedConversation,
-} from "../redux/conversation.slice";
 import Button from "./ui/Button";
 import { APP_NAME } from "../config/brand";
 
@@ -31,9 +25,17 @@ export default function ChatInput({ setBanner }) {
   const [value, setValue] = useState("");
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
-  const dispatch = useDispatch();
-  const { selectedConversation } = useSelector((state) => state.conversation);
-  const { isLoading } = useSelector((state) => state.message);
+
+  const selectedConversation = useConversationStore((state) => state.selectedConversation);
+  const addConversation = useConversationStore((state) => state.addConversation);
+  const setSelectedConversation = useConversationStore((state) => state.setSelectedConversation);
+  const setConvTitle = useConversationStore((state) => state.setConvTitle);
+
+  const isLoading = useMessageStore((state) => state.isLoading);
+  const setIsLoading = useMessageStore((state) => state.setIsLoading);
+  const addMessage = useMessageStore((state) => state.addMessage);
+  const setArtifacts = useMessageStore((state) => state.setArtifacts);
+
   const fileRef = useRef(null);
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -97,29 +99,27 @@ export default function ChatInput({ setBanner }) {
     const prompt = value.trim();
     if (!prompt) return;
 
-    dispatch(setIsLoading(true));
+    setIsLoading(true);
 
     try {
       let conversation = selectedConversation;
 
       if (!conversation) {
         const newConversation = await createConversation();
-        dispatch(addConversation(newConversation));
-        dispatch(setSelectedConversation(newConversation));
+        addConversation(newConversation);
+        setSelectedConversation(newConversation);
         conversation = newConversation;
       }
 
       if (conversation.title === "New Chat") {
         await updateConversations(conversation._id, prompt.slice(0, 40));
-        dispatch(
-          setConvTitle({
-            conversationId: conversation._id,
-            title: prompt.slice(0, 40),
-          })
-        );
+        setConvTitle({
+          conversationId: conversation._id,
+          title: prompt.slice(0, 40),
+        });
       }
 
-      dispatch(addMessage({ role: "user", content: prompt }));
+      addMessage({ role: "user", content: prompt });
       setValue("");
 
       const formData = new FormData();
@@ -134,16 +134,14 @@ export default function ChatInput({ setBanner }) {
       setSelectedFile(null);
 
       const data = await sendPrompt(formData);
-      dispatch(
-        addMessage({
-          role: "assistant",
-          content: data.answer,
-          images: data.images,
-        })
-      );
+      addMessage({
+        role: "assistant",
+        content: data.answer,
+        images: data.images,
+      });
 
       if (data.artifacts) {
-        dispatch(setArtifacts(data.artifacts));
+        setArtifacts(data.artifacts);
       }
     } catch (error) {
       setBanner({
@@ -152,7 +150,7 @@ export default function ChatInput({ setBanner }) {
         message: error.response?.data?.message || "Please try again.",
       });
     } finally {
-      dispatch(setIsLoading(false));
+      setIsLoading(false);
     }
   };
 

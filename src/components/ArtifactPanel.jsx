@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useMessageStore } from "../store";
 import Editor from "@monaco-editor/react";
 import { detectLanguage } from "../utils/detectLanguage";
 import {
@@ -21,7 +21,7 @@ export default function ArtifactPanel() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const { artifacts } = useSelector((state) => state.message);
+  const artifacts = useMessageStore((state) => state.artifacts);
   const artifact = artifacts?.[0];
 
   if (!artifact) return null;

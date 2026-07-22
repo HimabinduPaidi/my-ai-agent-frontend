@@ -1,11 +1,10 @@
-import { useDispatch, useSelector } from "react-redux";
+import { useUserStore } from "../store";
 import ArtifactPanel from "../components/ArtifactPanel";
 import ChatArea from "../components/ChatArea";
 import Sidebar from "../components/Sidebar";
 import Modal from "../components/ui/Modal";
 import Button from "../components/ui/Button";
 import api from "../utils/axios";
-import { setUserData } from "../redux/user.slice";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../firebase";
 import { APP_NAME, APP_INITIAL, APP_ARCHITECTURE } from "../config/brand";
@@ -34,13 +33,13 @@ function GoogleIcon() {
 }
 
 function Home() {
-  const { userData } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
+  const userData = useUserStore((state) => state.userData);
+  const setUserData = useUserStore((state) => state.setUserData);
 
   const login = async (token) => {
     try {
-      const { data } = await api.post(`/api/auth/login`, { token });
-      dispatch(setUserData(data.user));
+      const { data } = await api.post("/login", { token });
+      setUserData(data.user);
     } catch (error) {
       console.log(error);
     }

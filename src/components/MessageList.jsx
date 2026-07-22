@@ -1,7 +1,6 @@
 import MessageBubble from "./MessageBubble";
-import { useDispatch, useSelector } from "react-redux";
+import { useConversationStore, useMessageStore, useUserStore } from "../store";
 import { getMessages } from "../features/message.api";
-import { setArtifacts, setMessages } from "../redux/message.slice";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { TypingIndicator } from "./ui/Loader";
@@ -53,10 +52,13 @@ const CAPABILITIES = [
 
 export default function MessageList() {
   const bottomRef = useRef(null);
-  const { messages, isLoading } = useSelector((state) => state.message);
-  const { selectedConversation } = useSelector((state) => state.conversation);
-  const { userData } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
+  const messages = useMessageStore((state) => state.messages);
+  const isLoading = useMessageStore((state) => state.isLoading);
+  const setMessages = useMessageStore((state) => state.setMessages);
+  const setArtifacts = useMessageStore((state) => state.setArtifacts);
+
+  const selectedConversation = useConversationStore((state) => state.selectedConversation);
+  const userData = useUserStore((state) => state.userData);
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -71,13 +73,13 @@ export default function MessageList() {
     if (selectedConversation?.title === "New Chat") return;
     const get = async () => {
       const data = await getMessages(selectedConversation?._id);
-      dispatch(setMessages(data));
+      setMessages(data);
       const latestArtifactMessage = [...data]
         .reverse()
         .find((msg) => msg.artifacts && msg.artifacts.length > 0);
 
       if (latestArtifactMessage) {
-        dispatch(setArtifacts(latestArtifactMessage.artifacts));
+        setArtifacts(latestArtifactMessage.artifacts);
       }
     };
     get();

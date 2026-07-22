@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X, Crown, Zap, Sparkles } from "lucide-react";
-import { useSelector } from "react-redux";
+import { useUserStore } from "../store";
 import { createOrder } from "../features/billing.api";
 import api from "../utils/axios";
 import Button from "./ui/Button";
@@ -9,7 +9,7 @@ import Badge from "./ui/Badge";
 import { APP_NAME } from "../config/brand";
 
 export default function BillingDrawer({ open, onClose }) {
-  const { userData } = useSelector((state) => state.user);
+  const userData = useUserStore((state) => state.userData);
 
   const handleUpgrade = async (plan) => {
     try {
